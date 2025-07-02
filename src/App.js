@@ -1,5 +1,4 @@
-// src/App.js
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ChakraProvider,
   Box,
@@ -9,30 +8,30 @@ import {
   Button,
   useColorMode,
   IconButton,
-} from '@chakra-ui/react';
-import { SunIcon, MoonIcon } from '@chakra-ui/icons'; // Only these two icons
+} from "@chakra-ui/react";
+import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 
 function App() {
   const { colorMode, toggleColorMode } = useColorMode();
-  const [postIdea, setPostIdea] = useState('');
+  const [postIdea, setPostIdea] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   async function generatePostIdea() {
     setLoading(true);
     setError(null);
+
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-      });
+      const response = await fetch("/api/generate", { method: "POST" });
       const data = await response.json();
+
       if (response.ok) {
         setPostIdea(data.suggestion);
       } else {
-        setError(data.error || 'Unknown error');
+        setError(data.error || "Unknown error");
       }
-    } catch (err) {
-      setError('Failed to fetch AI suggestion. Please try again.');
+    } catch {
+      setError("Failed to fetch AI suggestion. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -48,7 +47,7 @@ function App() {
 
           <Box textAlign="right">
             <IconButton
-              icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+              icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
               onClick={toggleColorMode}
               aria-label="Toggle color mode"
             />
@@ -61,14 +60,21 @@ function App() {
           </Box>
 
           <Box>
-            <Button onClick={generatePostIdea} isLoading={loading} colorScheme="teal" width="full">
+            <Button
+              onClick={generatePostIdea}
+              isLoading={loading}
+              colorScheme="teal"
+              width="full"
+            >
               Click to get AI-generated post idea
             </Button>
+
             {postIdea && (
               <Box mt={4} p={4} bg="gray.100" borderRadius="md">
                 <Text>{postIdea}</Text>
               </Box>
             )}
+
             {error && (
               <Box mt={4} p={4} bg="red.100" borderRadius="md" color="red.700">
                 <Text>{error}</Text>
