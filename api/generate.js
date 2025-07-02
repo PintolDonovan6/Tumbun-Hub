@@ -1,33 +1,30 @@
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Make sure this env var is set in Vercel
 });
-const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const { prompt } = req.body;
+
+  if (!prompt || prompt.trim() === "") {
+    return res.status(400).json({ error: "Prompt is required" });
+  }
+
   try {
-    const { prompt } = req.body;
-
-    if (!prompt) {
-      return res.status(400).json({ error: "Prompt is required" });
-    }
-
-    const completion = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt,
-      max_tokens: 150,
-      temperature: 0.7,
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
     });
 
-    res.status(200).json({ result: completion.data.choices[0].text.trim() });
+    const result = completion.choices[0].message.content;
+    res.status(200).json({ result });
   } catch (error) {
-    console.error("OpenAI API error:", error.response?.data || error.message);
+    console.error("OpenAI API error:", error);
     res.status(500).json({ error: "Failed to generate AI suggestion" });
   }
 }
