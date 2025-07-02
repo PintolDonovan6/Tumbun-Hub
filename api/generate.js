@@ -1,7 +1,7 @@
 import { Configuration, OpenAIApi } from 'openai';
 
 const configuration = new Configuration({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const openai = new OpenAIApi(configuration);
@@ -10,17 +10,18 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
   try {
     const completion = await openai.createChatCompletion({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that generates creative social media post ideas in simple Tok Pisin.',
+          content: 'You are a helpful assistant that gives creative Tok Pisin social media post ideas for PNG content creators.',
         },
         {
           role: 'user',
-          content: 'Give me a creative social media post idea for PNG content creators.',
+          content: 'Give me a creative social media post idea in Tok Pisin.',
         },
       ],
       max_tokens: 60,
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
     const suggestion = completion.data.choices[0].message.content.trim();
     res.status(200).json({ suggestion });
   } catch (error) {
-    console.error('OpenAI error:', error);
-    res.status(500).json({ error: 'I no inap kisim AI tok, tria gen.' });
+    console.error('OpenAI Error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'AI tok i no kamap. Tria gen liklik.' });
   }
 }
