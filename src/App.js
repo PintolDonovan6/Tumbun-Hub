@@ -13,7 +13,6 @@ import {
   useColorMode,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { SunIcon, MoonIcon } from '@chakra-ui/icons';
 
 function Dashboard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
