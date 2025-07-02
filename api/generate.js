@@ -12,21 +12,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    if (!configuration.apiKey) {
-      throw new Error('OpenAI API key is missing in environment variables.');
-    }
-
     const completion = await openai.createChatCompletion({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that generates creative post ideas in simple Tok Pisin.',
+          content: 'You are a helpful assistant that gives creative post ideas in Tok Pisin.',
         },
         {
           role: 'user',
           content: 'Give me a creative social media post idea for PNG content creators.',
-        },
+        }
       ],
       max_tokens: 60,
     });
@@ -34,7 +30,7 @@ export default async function handler(req, res) {
     const suggestion = completion.data.choices[0].message.content.trim();
     res.status(200).json({ suggestion });
   } catch (error) {
-    console.error('OpenAI API error:', error.response?.data || error.message || error);
-    res.status(500).json({ error: 'I no inap kisim AI tok, tria gen.' });
+    console.error('OpenAI error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'AI tok i no kamap. Tria gen.' });
   }
 }
