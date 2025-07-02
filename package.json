@@ -1,8 +1,4 @@
-{
-  "name": "tumbuna-hub",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
+"dependencies": {
   "@chakra-ui/icons": "^2.1.0",
   "@chakra-ui/react": "^2.0.0",
   "@emotion/react": "^11.0.0",
@@ -15,5 +11,4 @@
   "recharts": "^2.4.3",
   "ajv": "6.12.6",
   "ajv-keywords": "3.5.2"
-  }
 }
