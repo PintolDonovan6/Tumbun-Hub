@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ChakraProvider,
   Box,
@@ -8,88 +8,107 @@ import {
   HStack,
   Button,
   useColorMode,
+  useColorModeValue,
   IconButton,
-} from '@chakra-ui/react';
-import { SunIcon, MoonIcon, CopyIcon } from '@chakra-ui/icons';
-import axios from 'axios';
+  extendTheme,
+} from "@chakra-ui/react";
+import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 
 function Dashboard() {
-  const [followers] = useState(4560);
-  const [engagementRate] = useState(12.5);
-  const [reach] = useState(18300);
+  const [postSuggestion, setPostSuggestion] = useState(
+    "Try a behind-the-scenes video of your latest event to boost engagement."
+  );
 
-  const [postSuggestions, setPostSuggestions] = useState([
-    "Try a behind-the-scenes video of your latest event to boost engagement.",
-    "Use hashtags #TumbunaHub #PNGContent to reach a wider audience.",
-  ]);
-  const [loading, setLoading] = useState(false);
+  const generatePostSuggestion = () => {
+    // Dummy AI logic: rotate between suggestions
+    const suggestions = [
+      "Try a behind-the-scenes video of your latest event to boost engagement.",
+      "Use hashtags #TumbunaHub #PNGContent to reach a wider audience.",
+      "Post a poll to engage your followers with questions about their favorite content.",
+      "Share a customer testimonial video to build trust and credibility.",
+    ];
+    const currentIndex = suggestions.indexOf(postSuggestion);
+    const nextIndex = (currentIndex + 1) % suggestions.length;
+    setPostSuggestion(suggestions[nextIndex]);
+  };
 
   const { colorMode, toggleColorMode } = useColorMode();
-
-  const generatePostSuggestion = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post('/api/generate');
-      if (response.data && response.data.suggestion) {
-        setPostSuggestions((prev) => [response.data.suggestion, ...prev]);
-      }
-    } catch (error) {
-      alert('Failed to generate post suggestion');
-    }
-    setLoading(false);
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
-  };
+  const bg = useColorModeValue("gray.50", "gray.900");
+  const boxBg = useColorModeValue("gray.100", "gray.700");
+  const headingColor = useColorModeValue("teal.600", "teal.300");
+  const statColor = useColorModeValue("teal.700", "teal.400");
 
   return (
-    <Box p={6} maxW="900px" mx="auto">
+    <Box p={6} maxW="900px" mx="auto" bg={bg} minH="100vh">
       <HStack justify="space-between" mb={6}>
-        <Heading color="teal.600">Tumbuna Hub Dashboard</Heading>
+        <Heading color={headingColor}>Tumbuna Hub Dashboard</Heading>
         <IconButton
-          aria-label="Toggle Dark Mode"
-          icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+          aria-label="Toggle dark mode"
+          icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
           onClick={toggleColorMode}
         />
       </HStack>
 
-      <HStack spacing={12} mb={8} justify="space-between">
-        <Box bg="gray.100" p={4} borderRadius="md" flex="1" textAlign="center">
-          <Text fontWeight="bold" fontSize="lg">Followers</Text>
-          <Text fontSize="3xl" color="teal.700">{followers.toLocaleString()}</Text>
+      <HStack spacing={6} mb={8} justify="space-between" flexWrap="wrap">
+        <Box
+          bg={boxBg}
+          p={4}
+          borderRadius="md"
+          flex="1"
+          minW="150px"
+          textAlign="center"
+          mb={{ base: 4, md: 0 }}
+        >
+          <Text fontWeight="bold" fontSize="lg">
+            Followers
+          </Text>
+          <Text fontSize="3xl" color={statColor}>
+            4,560
+          </Text>
         </Box>
-        <Box bg="gray.100" p={4} borderRadius="md" flex="1" textAlign="center">
-          <Text fontWeight="bold" fontSize="lg">Engagement Rate</Text>
-          <Text fontSize="3xl" color="teal.700">{engagementRate}%</Text>
+        <Box
+          bg={boxBg}
+          p={4}
+          borderRadius="md"
+          flex="1"
+          minW="150px"
+          textAlign="center"
+          mb={{ base: 4, md: 0 }}
+        >
+          <Text fontWeight="bold" fontSize="lg">
+            Engagement Rate
+          </Text>
+          <Text fontSize="3xl" color={statColor}>
+            12.5%
+          </Text>
         </Box>
-        <Box bg="gray.100" p={4} borderRadius="md" flex="1" textAlign="center">
-          <Text fontWeight="bold" fontSize="lg">Reach</Text>
-          <Text fontSize="3xl" color="teal.700">{reach.toLocaleString()}</Text>
+        <Box
+          bg={boxBg}
+          p={4}
+          borderRadius="md"
+          flex="1"
+          minW="150px"
+          textAlign="center"
+        >
+          <Text fontWeight="bold" fontSize="lg">
+            Reach
+          </Text>
+          <Text fontSize="3xl" color={statColor}>
+            18,300
+          </Text>
         </Box>
       </HStack>
 
       <VStack align="start" spacing={4}>
-        <Heading size="md" color="teal.600">AI Post Suggestions</Heading>
-
-        {postSuggestions.map((suggestion, idx) => (
-          <HStack key={idx} justify="space-between" w="100%" bg="gray.50" p={3} borderRadius="md">
-            <Text>{suggestion}</Text>
-            <IconButton
-              aria-label="Copy suggestion"
-              icon={<CopyIcon />}
-              size="sm"
-              onClick={() => copyToClipboard(suggestion)}
-            />
-          </HStack>
-        ))}
-
+        <Heading size="md" color={headingColor}>
+          AI Post Suggestions
+        </Heading>
+        <Text fontStyle="italic">“{postSuggestion}”</Text>
         <Button
           colorScheme="teal"
           mt={2}
           onClick={generatePostSuggestion}
-          isLoading={loading}
+          aria-label="Generate a new post suggestion"
         >
           Generate Post Idea
         </Button>
@@ -99,8 +118,16 @@ function Dashboard() {
 }
 
 function App() {
+  // Optional: Customize Chakra theme here if you want
+  const theme = extendTheme({
+    config: {
+      initialColorMode: "light",
+      useSystemColorMode: false,
+    },
+  });
+
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <Dashboard />
     </ChakraProvider>
   );
