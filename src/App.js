@@ -5,111 +5,84 @@ import {
   Heading,
   Text,
   VStack,
-  HStack,
   Button,
-  Select,
+  Spinner,
   useToast,
-  IconButton,
+  HStack,
+  Stat,
+  StatLabel,
+  StatNumber,
 } from '@chakra-ui/react';
-import { SunIcon, MoonIcon } from '@chakra-ui/icons';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-} from 'recharts';
-
-const data = [
-  { name: 'Mon', followers: 1000, engagement: 2 },
-  { name: 'Tue', followers: 2000, engagement: 4 },
-  { name: 'Wed', followers: 3000, engagement: 6 },
-  { name: 'Thu', followers: 4000, engagement: 8 },
-  { name: 'Fri', followers: 4580, engagement: 15 },
-  { name: 'Sat', followers: 2000, engagement: 4 },
-  { name: 'Sun', followers: 1500, engagement: 3 },
-];
+import { SunIcon } from '@chakra-ui/icons';
 
 function App() {
+  const [loading, setLoading] = useState(false);
   const [suggestion, setSuggestion] = useState('');
   const toast = useToast();
 
-  const handleGenerate = async () => {
+  async function generateSuggestion() {
+    setLoading(true);
+    setSuggestion('');
     try {
-      const response = await fetch('/api/generate', {
+      const res = await fetch('/api/generate', {
         method: 'POST',
       });
-      const data = await response.json();
-      if (response.ok) {
-        setSuggestion(data.suggestion);
-      } else {
-        throw new Error(data.error || 'Failed to fetch');
-      }
-    } catch (err) {
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      setSuggestion(data.suggestion);
+    } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to fetch AI suggestion',
+        description: 'Failed to fetch AI suggestion. Please try again.',
         status: 'error',
-        duration: 3000,
+        duration: 4000,
         isClosable: true,
       });
     }
-  };
+    setLoading(false);
+  }
 
   return (
     <ChakraProvider>
-      <Box p={6} maxW="1000px" mx="auto">
-        <HStack justify="space-between">
-          <Heading size="lg">Tumbuna Hub Dashboard</Heading>
-          <HStack>
-            <IconButton icon={<SunIcon />} aria-label="Light" />
-            <IconButton icon={<MoonIcon />} aria-label="Dark" />
-          </HStack>
+      <Box maxW="600px" mx="auto" p={6} mt={10} borderWidth={1} borderRadius="md" boxShadow="md">
+        <HStack mb={6} spacing={3}>
+          <SunIcon boxSize={8} color="orange.400" />
+          <Heading>Tumbuna Hub Dashboard</Heading>
         </HStack>
 
-        <HStack mt={4} spacing={8}>
-          <VStack>
-            <Text fontSize="2xl" fontWeight="bold">Followers</Text>
-            <Text fontSize="xl">4,580</Text>
-          </VStack>
-          <VStack>
-            <Text fontSize="2xl" fontWeight="bold">Engagement Rate</Text>
-            <Text fontSize="xl">15%</Text>
-          </VStack>
-          <VStack>
-            <Text fontSize="2xl" fontWeight="bold">Reach</Text>
-            <Text fontSize="xl">18,300</Text>
-          </VStack>
-        </HStack>
+        <VStack spacing={5} mb={8}>
+          <Stat>
+            <StatLabel>Followers</StatLabel>
+            <StatNumber>4,580</StatNumber>
+          </Stat>
+          <Stat>
+            <StatLabel>Engagement Rate</StatLabel>
+            <StatNumber>15%</StatNumber>
+          </Stat>
+          <Stat>
+            <StatLabel>Reach</StatLabel>
+            <StatNumber>18,300</StatNumber>
+          </Stat>
+        </VStack>
 
-        <Box mt={6}>
-          <Text fontWeight="bold" mb={2}>View stats for:</Text>
-          <Select maxW="200px" defaultValue="7days">
-            <option value="7days">Last 7 Days</option>
-            <option value="14days">Last 14 Days</option>
-            <option value="30days">Last 30 Days</option>
-          </Select>
-        </Box>
-
-        <Box mt={6}>
-          <LineChart width={900} height={300} data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis yAxisId="left" label={{ value: 'Followers', angle: -90, position: 'insideLeft' }} />
-            <YAxis yAxisId="right" orientation="right" label={{ value: 'Engagement %', angle: -90, position: 'insideRight' }} />
-            <Tooltip />
-            <Legend />
-            <Line yAxisId="left" type="monotone" dataKey="followers" stroke="#3182ce" activeDot={{ r: 8 }} />
-            <Line yAxisId="right" type="monotone" dataKey="engagement" stroke="#e53e3e" />
-          </LineChart>
-        </Box>
-
-        <Box mt={10}>
-          <Heading size="md" mb={2}>AI Post Suggestions</Heading>
-          <Text mb={4}>Click the button to get a fresh AI-generated post idea.</Text>
-          <Button colorScheme="blue" onClick={handleGenerate}>Generate Post Idea</Button>
-          {suggestion && (
-            <Box mt={4} p={4} bg="gray.100" borderRadius="md">
-              <Text>{suggestion}</Text>
-            </Box>
+        <Box mb={4}>
+          <Text fontWeight="bold" mb={2}>
+            AI Post Suggestions
+          </Text>
+          {loading ? (
+            <Spinner />
+          ) : suggestion ? (
+            <Text fontStyle="italic" p={3} bg="gray.100" borderRadius="md">
+              {suggestion}
+            </Text>
+          ) : (
+            <Text>Click the button to get a fresh AI-generated post idea.</Text>
           )}
         </Box>
+
+        <Button colorScheme="orange" onClick={generateSuggestion} isLoading={loading}>
+          Generate Post Idea
+        </Button>
       </Box>
     </ChakraProvider>
   );
