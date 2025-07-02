@@ -7,6 +7,9 @@ import {
   VStack,
   HStack,
   Select,
+  Button,
+  Spinner,
+  useToast,
 } from "@chakra-ui/react";
 import {
   LineChart,
@@ -48,106 +51,86 @@ function Dashboard() {
   const data = mockData[range];
   const latest = data[data.length - 1];
 
+  const [suggestion, setSuggestion] = useState("Click the button to get a fresh AI-generated post idea.");
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  const fetchAISuggestion = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch AI suggestion");
+      }
+      const json = await response.json();
+      setSuggestion(json.suggestion.trim());
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box p={6} maxW="900px" mx="auto">
-      <Heading mb={6} color="teal.600">
-        Tumbuna Hub Dashboard
-      </Heading>
+      <Heading mb={6} color="teal.600">Tumbuna Hub Dashboard</Heading>
 
       <HStack spacing={12} mb={8} justify="space-between">
-        <Box
-          bg="gray.100"
-          p={4}
-          borderRadius="md"
-          flex="1"
-          textAlign="center"
-          boxShadow="md"
-        >
-          <Text fontWeight="bold" fontSize="lg">
-            Followers
-          </Text>
-          <Text fontSize="3xl" color="teal.700">
-            {latest.followers.toLocaleString()}
-          </Text>
+        <Box bg="gray.100" p={4} borderRadius="md" flex="1" textAlign="center" boxShadow="md">
+          <Text fontWeight="bold" fontSize="lg">Followers</Text>
+          <Text fontSize="3xl" color="teal.700">{latest.followers.toLocaleString()}</Text>
         </Box>
-        <Box
-          bg="gray.100"
-          p={4}
-          borderRadius="md"
-          flex="1"
-          textAlign="center"
-          boxShadow="md"
-        >
-          <Text fontWeight="bold" fontSize="lg">
-            Engagement Rate
-          </Text>
-          <Text fontSize="3xl" color="teal.700">
-            {latest.engagement}%
-          </Text>
+        <Box bg="gray.100" p={4} borderRadius="md" flex="1" textAlign="center" boxShadow="md">
+          <Text fontWeight="bold" fontSize="lg">Engagement Rate</Text>
+          <Text fontSize="3xl" color="teal.700">{latest.engagement}%</Text>
         </Box>
-        <Box
-          bg="gray.100"
-          p={4}
-          borderRadius="md"
-          flex="1"
-          textAlign="center"
-          boxShadow="md"
-        >
-          <Text fontWeight="bold" fontSize="lg">
-            Reach
-          </Text>
-          <Text fontSize="3xl" color="teal.700">
-            {latest.reach.toLocaleString()}
-          </Text>
+        <Box bg="gray.100" p={4} borderRadius="md" flex="1" textAlign="center" boxShadow="md">
+          <Text fontWeight="bold" fontSize="lg">Reach</Text>
+          <Text fontSize="3xl" color="teal.700">{latest.reach.toLocaleString()}</Text>
         </Box>
       </HStack>
 
       <HStack mb={4} spacing={4}>
         <Text>View stats for:</Text>
-        <Select
-          value={range}
-          onChange={(e) => setRange(e.target.value)}
-          maxW="150px"
-          size="sm"
-        >
+        <Select value={range} onChange={(e) => setRange(e.target.value)} maxW="150px" size="sm">
           <option value="daily">Last 7 Days</option>
           <option value="weekly">Last 4 Weeks</option>
           <option value="monthly">Last 4 Months</option>
         </Select>
       </HStack>
 
-      <Box w="100%" h="300px" bg="white" p={4} borderRadius="md" boxShadow="md">
+      <Box w="100%" h="300px" bg="white" p={4} borderRadius="md" boxShadow="md" mb={6}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
-            <YAxis yAxisId="left" domain={["dataMin - 100", "dataMax + 100"]} />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              domain={["dataMin - 2", "dataMax + 2"]}
-              tickFormatter={(value) => `${value}%`}
-            />
+            <YAxis yAxisId="left" />
+            <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${value}%`} />
             <Tooltip />
             <Legend />
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="followers"
-              stroke="#3182CE"
-              activeDot={{ r: 8 }}
-              name="Followers"
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="engagement"
-              stroke="#38A169"
-              name="Engagement %"
-            />
+            <Line yAxisId="left" type="monotone" dataKey="followers" stroke="#3182CE" name="Followers" />
+            <Line yAxisId="right" type="monotone" dataKey="engagement" stroke="#38A169" name="Engagement %" />
           </LineChart>
         </ResponsiveContainer>
       </Box>
+
+      <VStack align="start" spacing={4}>
+        <Heading size="md" color="teal.600">AI Post Suggestions</Heading>
+        <Text minH="60px" fontStyle="italic" color={loading ? "gray.400" : "black"}>
+          {loading ? <Spinner size="sm" /> : suggestion}
+        </Text>
+        <Button colorScheme="teal" mt={2} onClick={fetchAISuggestion} isLoading={loading} loadingText="Generating...">
+          Generate Post Idea
+        </Button>
+      </VStack>
     </Box>
   );
 }
